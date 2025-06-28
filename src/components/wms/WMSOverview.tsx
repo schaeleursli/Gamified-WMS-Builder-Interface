@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { ClipboardIcon, ArrowLeftIcon, CheckCircleIcon, SaveIcon, TagIcon, PlusIcon, LayoutIcon, FileTextIcon, TrophyIcon, DownloadIcon } from 'lucide-react';
+import { ClipboardIcon, ArrowLeftIcon, CheckCircleIcon, SaveIcon, TagIcon, PlusIcon, LayoutIcon, FileTextIcon, TrophyIcon, DownloadIcon, ListIcon } from 'lucide-react';
 import { WMS } from '../../types';
 import { StepList } from './StepList';
 import { RiskPanel } from './RiskPanel';
 import { EquipmentSummary } from './EquipmentSummary';
 import { SaveAsTemplate } from './SaveAsTemplate';
+import { StepRiskList } from './StepRiskList';
 import { useProject } from '../../contexts/ProjectContext';
 import { XPProgress } from '../XPProgress';
 import { MissionComplete } from '../MissionComplete';
@@ -20,7 +21,7 @@ export const WMSOverview: React.FC<WMSOverviewProps> = ({
   const {
     updateWMS
   } = useProject();
-  const [activeTab, setActiveTab] = useState<'steps' | 'risks' | 'equipment' | 'ai'>('steps');
+  const [activeTab, setActiveTab] = useState<'overview' | 'steps' | 'risks' | 'equipment' | 'ai'>('overview');
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [xpPoints, setXpPoints] = useState(wms.steps.length * 10 + wms.risks.length * 15);
@@ -36,6 +37,10 @@ export const WMSOverview: React.FC<WMSOverviewProps> = ({
     setIsComplete(true);
     // Add bonus XP for completion
     setXpPoints(prev => prev + 50);
+  };
+  const handleAddStep = () => {
+    setActiveTab('steps');
+    // You could add additional logic here to automatically open the add step form
   };
   if (isComplete) {
     return <MissionComplete xpPoints={xpPoints} onBack={onBack} wms={wms} />;
@@ -75,6 +80,12 @@ export const WMSOverview: React.FC<WMSOverviewProps> = ({
         </div>}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-card overflow-hidden mb-6 flex flex-col">
         <div className="flex border-b border-slate-200 dark:border-slate-700">
+          <button className={`flex-1 py-3 px-4 text-center transition-colors ${activeTab === 'overview' ? 'bg-pastel-blue-50 dark:bg-pastel-blue-900/20 text-pastel-blue-600 dark:text-pastel-blue-400 font-medium' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`} onClick={() => setActiveTab('overview')}>
+            <div className="flex items-center justify-center">
+              <ListIcon size={18} className="mr-2" />
+              Overview
+            </div>
+          </button>
           <button className={`flex-1 py-3 px-4 text-center transition-colors ${activeTab === 'steps' ? 'bg-pastel-blue-50 dark:bg-pastel-blue-900/20 text-pastel-blue-600 dark:text-pastel-blue-400 font-medium' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`} onClick={() => setActiveTab('steps')}>
             <div className="flex items-center justify-center">
               <ClipboardIcon size={18} className="mr-2" />
@@ -101,6 +112,7 @@ export const WMSOverview: React.FC<WMSOverviewProps> = ({
           </button>
         </div>
         <div className="p-6 overflow-y-auto">
+          {activeTab === 'overview' && <StepRiskList wms={wms} onAddStep={handleAddStep} />}
           {activeTab === 'steps' && <StepList wms={wms} onUpdate={handleWMSUpdate} onXPChange={points => setXpPoints(prev => prev + points)} />}
           {activeTab === 'risks' && <RiskPanel wms={wms} onUpdate={handleWMSUpdate} onXPChange={points => setXpPoints(prev => prev + points)} />}
           {activeTab === 'equipment' && <EquipmentSummary wms={wms} onUpdate={handleWMSUpdate} onXPChange={points => setXpPoints(prev => prev + points)} />}

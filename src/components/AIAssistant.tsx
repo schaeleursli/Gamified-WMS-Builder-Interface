@@ -49,7 +49,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 5,
           likelihood: 3,
           mitigation: 'Conduct soil bearing analysis and use mats if necessary',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 0 ? [wms.steps[0].id] : []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -58,7 +59,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 3,
           likelihood: 2,
           mitigation: 'Use spotter and check clearances prior to lift',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 1 ? [wms.steps[1].id] : []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -67,7 +69,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 4,
           likelihood: 2,
           mitigation: 'Use certified rigging and double-check load limits',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 0 ? [wms.steps[0].id] : []
         }];
       } else if (analysisType === 'transport') {
         mockAIRisks = [{
@@ -78,7 +81,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 4,
           likelihood: 3,
           mitigation: 'Secure load with appropriate restraints and check regularly',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 0 ? [wms.steps[0].id] : []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -87,7 +91,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 5,
           likelihood: 2,
           mitigation: 'Use escort vehicles and maintain safe speed',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 1 ? [wms.steps[1].id] : []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -96,7 +101,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 3,
           likelihood: 3,
           mitigation: 'Pre-plan route and obtain necessary permits',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: []
         }];
       } else if (analysisType === 'ocean') {
         mockAIRisks = [{
@@ -107,7 +113,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 4,
           likelihood: 3,
           mitigation: 'Proper lashing and securing according to maritime standards',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: wms.steps.length > 0 ? [wms.steps[0].id] : []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -116,7 +123,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 3,
           likelihood: 4,
           mitigation: 'Apply protective coatings and use proper packaging',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -125,10 +133,31 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 2,
           likelihood: 4,
           mitigation: 'Plan for buffer time and have contingency plans',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: []
         }];
       } else {
-        mockAIRisks = [{
+        // Generate step-specific risks based on the WMS steps
+        if (wms.steps.length > 0) {
+          wms.steps.forEach((step, index) => {
+            if (index < 2) {
+              // Limit to first 2 steps to avoid too many suggestions
+              mockAIRisks.push({
+                id: uuidv4(),
+                wmsId: wms.id,
+                type: 'General',
+                description: `Risk for step ${index + 1}: ${step.title}`,
+                severity: 3,
+                likelihood: 3,
+                mitigation: `Ensure proper safety procedures for ${step.title.toLowerCase()}`,
+                source: 'ai',
+                associatedStepIds: [step.id]
+              });
+            }
+          });
+        }
+        // Add some general risks
+        mockAIRisks.push({
           id: uuidv4(),
           wmsId: wms.id,
           type: 'General',
@@ -136,7 +165,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 3,
           likelihood: 3,
           mitigation: 'Provide training on proper lifting techniques and PPE',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -145,7 +175,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 3,
           likelihood: 3,
           mitigation: 'Keep work area clean and free of obstacles',
-          source: 'ai'
+          source: 'ai',
+          associatedStepIds: []
         }, {
           id: uuidv4(),
           wmsId: wms.id,
@@ -154,8 +185,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           severity: 4,
           likelihood: 2,
           mitigation: 'Monitor weather forecasts and have stop-work criteria',
-          source: 'ai'
-        }];
+          source: 'ai',
+          associatedStepIds: []
+        });
       }
       setSuggestedRisks(mockAIRisks);
     } catch (error) {
@@ -266,6 +298,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 color
               } = getRiskLevel(risk.severity, risk.likelihood);
               const isSelected = selectedRisks.includes(i);
+              // Get step names for associated steps
+              const stepNames = risk.associatedStepIds?.map(stepId => {
+                const step = wms.steps.find(s => s.id === stepId);
+                return step ? step.title : '';
+              }).filter(Boolean) || [];
               return <div key={i} className={`border rounded-lg p-4 transition-all cursor-pointer
                           ${isSelected ? 'border-pastel-blue-300 dark:border-pastel-blue-700 bg-pastel-blue-50 dark:bg-pastel-blue-900/20' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-pastel-blue-200 dark:hover:border-pastel-blue-800'}`} onClick={() => handleSelectRisk(i)}>
                         <div className="flex items-start">
@@ -298,6 +335,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                                 {risk.mitigation}
                               </div>
                             </div>
+                            {stepNames.length > 0 && <div className="mt-2 flex flex-wrap gap-1">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  Associated with step(s):
+                                </span>
+                                {stepNames.map((name, idx) => <span key={idx} className="text-xs px-2 py-0.5 bg-pastel-green-100 dark:bg-pastel-green-900/30 text-pastel-green-600 dark:text-pastel-green-400 rounded-full">
+                                    {name}
+                                  </span>)}
+                              </div>}
                           </div>
                         </div>
                       </div>;
