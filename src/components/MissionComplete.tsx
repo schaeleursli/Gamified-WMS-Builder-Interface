@@ -1,35 +1,32 @@
 import React, { useEffect, createElement } from 'react';
-import { CheckCircleIcon, FileTextIcon, ShareIcon } from 'lucide-react';
+import { CheckCircleIcon, FileTextIcon, ShareIcon, ArrowLeftIcon, DownloadIcon, TrophyIcon, AwardIcon, StarIcon } from 'lucide-react';
+import { WMS } from '../types';
 interface MissionCompleteProps {
   xpPoints: number;
+  onBack: () => void;
+  wms: WMS;
 }
 export const MissionComplete: React.FC<MissionCompleteProps> = ({
-  xpPoints
+  xpPoints,
+  onBack,
+  wms
 }) => {
   useEffect(() => {
     // Simple confetti effect
     const createConfetti = () => {
-      const colors = ['#4299e1', '#48bb78', '#ed8936', '#ed64a6', '#9f7aea'];
+      const colors = ['#0076ff', '#00ff66', '#ff6600', '#ed64a6', '#9f7aea'];
       for (let i = 0; i < 100; i++) {
         const confetti = document.createElement('div');
-        confetti.className = 'absolute w-3 h-3 rounded-full opacity-70';
+        confetti.className = 'absolute w-3 h-3 rounded-full opacity-70 animate-confetti-fall';
         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
         confetti.style.left = Math.random() * 100 + 'vw';
         confetti.style.top = -10 + 'px';
         confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
         confetti.style.zIndex = '50';
         document.body.appendChild(confetti);
-        const animation = confetti.animate([{
-          transform: `translate(0, 0) rotate(0deg)`,
-          opacity: 1
-        }, {
-          transform: `translate(${Math.random() * 100 - 50}px, ${Math.random() * 1000 + 500}px) rotate(${Math.random() * 360}deg)`,
-          opacity: 0
-        }], {
-          duration: Math.random() * 3000 + 2000,
-          easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
-        });
-        animation.onfinish = () => confetti.remove();
+        setTimeout(() => {
+          confetti.remove();
+        }, 3000);
       }
     };
     createConfetti();
@@ -39,16 +36,32 @@ export const MissionComplete: React.FC<MissionCompleteProps> = ({
       confetti.forEach(el => el.remove());
     };
   }, []);
+  // Calculate the badges earned
+  const badges = [{
+    name: 'Safety Expert',
+    icon: <StarIcon className="h-5 w-5 mr-2" />,
+    color: 'bg-pastel-blue-100 dark:bg-pastel-blue-900/30 text-pastel-blue-600 dark:text-pastel-blue-400'
+  }, {
+    name: 'Risk Assessor',
+    icon: <AwardIcon className="h-5 w-5 mr-2" />,
+    color: 'bg-pastel-green-100 dark:bg-pastel-green-900/30 text-pastel-green-600 dark:text-pastel-green-400'
+  }, {
+    name: wms.steps.length > 5 ? 'Master Planner' : 'WMS Creator',
+    icon: <TrophyIcon className="h-5 w-5 mr-2" />,
+    color: 'bg-pastel-peach-100 dark:bg-pastel-peach-900/30 text-pastel-peach-600 dark:text-pastel-peach-400'
+  }];
   return <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mb-6">
+      <div className="w-20 h-20 rounded-full bg-pastel-green-100 dark:bg-pastel-green-900/30 flex items-center justify-center text-pastel-green-600 dark:text-pastel-green-400 mb-6 animate-bounce-slow">
         <CheckCircleIcon size={40} />
       </div>
-      <h1 className="text-3xl font-bold mb-2">Mission Complete!</h1>
+      <h1 className="text-3xl font-bold mb-2 text-slate-800 dark:text-slate-100">
+        Mission Complete!
+      </h1>
       <p className="text-xl text-slate-600 dark:text-slate-300 mb-6">
         Your Work Method Statement is ready to go
       </p>
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg px-6 py-4 mb-8">
-        <div className="text-lg font-medium text-blue-700 dark:text-blue-400">
+      <div className="bg-pastel-blue-50 dark:bg-pastel-blue-900/20 rounded-lg px-6 py-4 mb-8 animate-pulse-slow">
+        <div className="text-lg font-medium text-pastel-blue-700 dark:text-pastel-blue-400">
           You earned {xpPoints} XP!
         </div>
         <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
@@ -56,51 +69,45 @@ export const MissionComplete: React.FC<MissionCompleteProps> = ({
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md mb-8">
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border border-slate-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-card p-4 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
           <div className="text-center">
-            <div className="w-12 h-12 mx-auto rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-pastel-blue-100 dark:bg-pastel-blue-900/30 flex items-center justify-center text-pastel-blue-600 dark:text-pastel-blue-400 mb-3">
               <FileTextIcon size={24} />
             </div>
             <h3 className="font-medium mb-3">Export PDF</h3>
-            <button className="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+            <button className="w-full py-2 bg-pastel-blue-500 hover:bg-pastel-blue-600 text-white rounded-lg transition-colors shadow-soft">
+              <DownloadIcon size={16} className="inline-block mr-2" />
               Download
             </button>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 border border-slate-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-card p-4 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
           <div className="text-center">
-            <div className="w-12 h-12 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mb-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-pastel-green-100 dark:bg-pastel-green-900/30 flex items-center justify-center text-pastel-green-600 dark:text-pastel-green-400 mb-3">
               <ShareIcon size={24} />
             </div>
             <h3 className="font-medium mb-3">Share WMS</h3>
-            <button className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors">
+            <button className="w-full py-2 bg-pastel-green-500 hover:bg-pastel-green-600 text-white rounded-lg transition-colors shadow-soft">
+              <ShareIcon size={16} className="inline-block mr-2" />
               Share
             </button>
           </div>
         </div>
       </div>
       <div className="flex flex-wrap justify-center gap-3 mb-8">
-        <div className="flex items-center px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-          </svg>
-          Safety Expert
-        </div>
-        <div className="flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" />
-          </svg>
-          Risk Assessor
-        </div>
-        <div className="flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z" />
-          </svg>
-          First WMS
-        </div>
+        {badges.map((badge, index) => <div key={index} className={`flex items-center px-4 py-2 rounded-full ${badge.color}`}>
+            {badge.icon}
+            {badge.name}
+          </div>)}
       </div>
-      <button className="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors">
-        Create Another WMS
-      </button>
+      <div className="flex space-x-4">
+        <button onClick={onBack} className="px-6 py-3 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors shadow-soft flex items-center">
+          <ArrowLeftIcon size={18} className="mr-2" />
+          Back to Projects
+        </button>
+        <button className="px-6 py-3 bg-pastel-blue-500 hover:bg-pastel-blue-600 text-white rounded-lg transition-colors shadow-soft">
+          Create Another WMS
+        </button>
+      </div>
     </div>;
 };

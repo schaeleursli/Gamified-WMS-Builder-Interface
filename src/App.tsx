@@ -20,8 +20,8 @@ const AppContent = () => {
   const totalSteps = 5;
   // Show loading state
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-blue-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    return <div className="flex items-center justify-center min-h-screen bg-pastel-blue-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pastel-blue-500"></div>
       </div>;
   }
   // Show login if not authenticated
@@ -29,7 +29,7 @@ const AppContent = () => {
     return <Login />;
   }
   // Show main app content if authenticated
-  return <div className="flex flex-col md:flex-row w-full h-screen bg-blue-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 overflow-hidden">
+  return <div className="flex flex-col md:flex-row w-full h-screen bg-pastel-blue-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 overflow-hidden">
       {/* Sidebar - hidden on mobile */}
       <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0 h-full overflow-y-auto">
         <Sidebar currentStep={currentStep} />
@@ -40,7 +40,6 @@ const AppContent = () => {
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
         {/* Main scrollable content area */}
         <div className="flex-1 overflow-y-auto">
-          {/* Use ProjectDashboard for the new project-based structure */}
           <ProjectDashboard />
         </div>
       </div>
