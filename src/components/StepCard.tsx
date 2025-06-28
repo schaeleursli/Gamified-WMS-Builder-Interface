@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
-import { CheckCircleIcon, HelpCircleIcon } from 'lucide-react';
+import { InfoIcon, CalendarIcon, ClockIcon } from 'lucide-react';
 import { XPToast } from './XPToast';
 import { useLanguage } from '../contexts/LanguageContext';
 interface StepProps {
-  step: {
-    id: number;
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-  };
+  id?: number;
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
+  content: string;
+}
+interface StepCardProps {
+  step: StepProps;
   onComplete: () => void;
   xpPoints: number;
   setXpPoints: (points: number) => void;
 }
-export const StepCard: React.FC<StepProps> = ({
+export const StepCard: React.FC<StepCardProps> = ({
   step,
   onComplete,
   xpPoints,
@@ -22,85 +24,122 @@ export const StepCard: React.FC<StepProps> = ({
   const {
     t
   } = useLanguage();
-  const [formState, setFormState] = useState({
-    title: '',
-    description: '',
-    notes: ''
-  });
-  const [isValid, setIsValid] = useState(false);
-  const [showTip, setShowTip] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [xpEarned, setXpEarned] = useState(0);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const {
-      name,
-      value
-    } = e.target;
-    const newFormState = {
-      ...formState,
-      [name]: value
-    };
-    setFormState(newFormState);
-    // Simple validation - check if required fields have values
-    setIsValid(!!newFormState.title && !!newFormState.description);
-  };
-  const handleSubmit = () => {
-    if (isValid) {
-      const earnedPoints = 20;
-      setXpEarned(earnedPoints);
-      setShowToast(true);
-      setXpPoints(prev => prev + earnedPoints);
-      onComplete();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
+  // Schedule specific fields
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [duration, setDuration] = useState('');
+  const [durationUnit, setDurationUnit] = useState('days');
+  const handleComplete = () => {
+    // Validate required fields
+    if (!title.trim()) {
+      alert('Please enter a title');
+      return;
     }
+    if (!description.trim()) {
+      alert('Please enter a description');
+      return;
+    }
+    // For schedule step, validate date fields
+    if (step.content === 'schedule') {
+      if (!startDate) {
+        alert('Please select a start date');
+        return;
+      }
+      if (!endDate) {
+        alert('Please select an end date');
+        return;
+      }
+      if (!duration) {
+        alert('Please enter duration');
+        return;
+      }
+    }
+    // Award XP points for completing this step
+    setXpPoints(xpPoints + 20);
+    // Move to next step
+    onComplete();
   };
   return <div>
-      {showToast && <XPToast xpAmount={xpEarned} message={`${step.title} completed!`} onClose={() => setShowToast(false)} />}
-      <div className="flex items-center mb-6">
-        <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+      <div className="mb-6">
+        <h2 className="text-xl font-bold flex items-center">
           {step.icon}
-        </div>
-        <div className="ml-4">
-          <h2 className="text-xl font-semibold">{step.title}</h2>
-          <p className="text-slate-500 dark:text-slate-400">
-            {step.description}
-          </p>
-        </div>
+          <span className="ml-2">{step.title}</span>
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">
+          {step.description}
+        </p>
       </div>
       <div className="space-y-6">
         <div>
-          <div className="flex items-center mb-2">
-            <label htmlFor="title" className="block text-sm font-medium">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <button className="ml-2 text-slate-400 hover:text-blue-500" onClick={() => setShowTip(!showTip)} aria-label={showTip ? 'Hide tip' : 'Show tip'}>
-              <HelpCircleIcon size={16} />
-            </button>
-          </div>
-          {showTip && <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-slate-600 dark:text-slate-300">
-              <p>
-                Give your work method a clear, descriptive title that explains
-                what work is being done.
-              </p>
-            </div>}
-          <input type="text" id="title" name="title" value={formState.title} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" placeholder="e.g., Installation of Roof Trusses" aria-required="true" />
-        </div>
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-2">
-            Description <span className="text-red-500">*</span>
+          <label htmlFor="title" className="block mb-2 font-medium flex items-center">
+            Title <span className="text-red-500 ml-1">*</span>
+            <div className="relative group ml-2">
+              <InfoIcon size={16} className="text-slate-400" />
+              <div className="absolute left-0 bottom-full mb-2 w-48 p-2 bg-slate-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                Give your{' '}
+                {step.content === 'project-details' ? 'project' : step.content === 'schedule' ? 'schedule' : 'work method'}{' '}
+                a clear, descriptive title
+              </div>
+            </div>
           </label>
-          <textarea id="description" name="description" value={formState.description} onChange={handleChange} rows={4} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" placeholder="Describe the purpose and scope of this work method..." aria-required="true" />
+          <input type="text" id="title" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" placeholder={`e.g., ${step.content === 'project-details' ? 'Warehouse Construction Project' : step.content === 'schedule' ? 'Installation of Roof Trusses' : 'Concrete Pouring Procedure'}`} value={title} onChange={e => setTitle(e.target.value)} />
+        </div>
+        {step.content === 'schedule' && <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startDate" className="block mb-2 font-medium flex items-center">
+                  Start Date <span className="text-red-500 ml-1">*</span>
+                  <CalendarIcon size={16} className="ml-2 text-slate-400" />
+                </label>
+                <input type="date" id="startDate" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block mb-2 font-medium flex items-center">
+                  End Date <span className="text-red-500 ml-1">*</span>
+                  <CalendarIcon size={16} className="ml-2 text-slate-400" />
+                </label>
+                <input type="date" id="endDate" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <label htmlFor="duration" className="block mb-2 font-medium flex items-center">
+                  Duration <span className="text-red-500 ml-1">*</span>
+                  <ClockIcon size={16} className="ml-2 text-slate-400" />
+                </label>
+                <input type="number" id="duration" min="1" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" placeholder="e.g., 5" value={duration} onChange={e => setDuration(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor="durationUnit" className="block mb-2 font-medium">
+                  Unit
+                </label>
+                <select id="durationUnit" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" value={durationUnit} onChange={e => setDurationUnit(e.target.value)}>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                  <option value="weeks">Weeks</option>
+                  <option value="months">Months</option>
+                </select>
+              </div>
+            </div>
+          </>}
+        <div>
+          <label htmlFor="description" className="block mb-2 font-medium flex items-center">
+            Description <span className="text-red-500 ml-1">*</span>
+          </label>
+          <textarea id="description" rows={4} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" placeholder={`Describe the purpose and scope of this ${step.content === 'project-details' ? 'project' : step.content === 'schedule' ? 'work method' : 'work method'}...`} value={description} onChange={e => setDescription(e.target.value)}></textarea>
         </div>
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium mb-2">
+          <label htmlFor="notes" className="block mb-2 font-medium">
             Additional Notes
           </label>
-          <textarea id="notes" name="notes" value={formState.notes} onChange={handleChange} rows={3} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" placeholder="Any additional information that might be helpful..." />
+          <textarea id="notes" rows={3} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 focus:ring-2 focus:ring-pastel-blue-400 focus:border-transparent transition-all" placeholder="Any additional information that might be helpful..." value={notes} onChange={e => setNotes(e.target.value)}></textarea>
         </div>
-        <div className="flex justify-end">
-          <button onClick={handleSubmit} disabled={!isValid} className={`flex items-center px-6 py-2 rounded-lg font-medium transition-all
-              ${isValid ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'}`} aria-disabled={!isValid}>
-            {isValid && <CheckCircleIcon size={18} className="mr-2" />}
-            {t('step.continue')}
+        <div className="flex justify-end mt-6">
+          <button onClick={handleComplete} className="px-6 py-2 bg-pastel-blue-500 text-white rounded-lg hover:bg-pastel-blue-600 transition-colors shadow-soft">
+            Continue
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboardIcon, FolderIcon, HardHatIcon, AlertTriangleIcon, UserIcon } from 'lucide-react';
+import { LayoutDashboardIcon, FolderIcon, BookmarkIcon, HardHatIcon, AlertTriangleIcon, UserIcon } from 'lucide-react';
 import { useUser } from './UserContext';
 interface MobileNavigationProps {
   currentStep: number;
@@ -14,23 +14,28 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   } = useUser();
   const navItems = [{
     icon: <LayoutDashboardIcon size={20} />,
-    label: 'Home'
+    label: 'Home',
+    action: () => setCurrentStep(1)
   }, {
     icon: <FolderIcon size={20} />,
-    label: 'Projects'
+    label: 'Projects',
+    action: () => setCurrentStep(2)
   }, {
-    icon: <div size={20} />,
-    label: 'Templates'
+    icon: <BookmarkIcon size={20} />,
+    label: 'Templates',
+    action: () => setCurrentStep(3)
   }, {
     icon: <HardHatIcon size={20} />,
-    label: 'Equipment'
+    label: 'Equipment',
+    action: () => setCurrentStep(4)
   }, {
     icon: <AlertTriangleIcon size={20} />,
-    label: 'Risks'
+    label: 'Risks',
+    action: () => setCurrentStep(5)
   }];
   return <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-4 py-2 z-10">
       <div className="flex justify-between">
-        {navItems.map((item, index) => <button key={index} className="flex flex-col items-center px-3 py-2" onClick={() => index + 1 <= 5 && setCurrentStep(index + 1)}>
+        {navItems.map((item, index) => <button key={index} className="flex flex-col items-center px-3 py-2" onClick={item.action}>
             <div className={`mb-1 ${index + 1 === currentStep ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'}`}>
               {item.icon}
             </div>
