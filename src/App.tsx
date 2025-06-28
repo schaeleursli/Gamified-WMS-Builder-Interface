@@ -1,0 +1,53 @@
+import React, { useState } from 'react';
+import { Sidebar } from './components/Sidebar';
+import { MainPanel } from './components/MainPanel';
+import { MobileNavigation } from './components/MobileNavigation';
+import { ThemeProvider } from './components/ThemeContext';
+import { UserProvider, useUser } from './components/UserContext';
+import { Login } from './components/Login';
+const AppContent = () => {
+  const {
+    isAuthenticated,
+    isLoading
+  } = useUser();
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+  // Show loading state
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen bg-blue-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>;
+  }
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+  // Show main app content if authenticated
+  return <div className="flex flex-col md:flex-row w-full min-h-screen bg-blue-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+      {/* Sidebar - hidden on mobile */}
+      <div className="hidden md:block md:w-64 lg:w-72 flex-shrink-0">
+        <Sidebar currentStep={currentStep} />
+      </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Progress Bar */}
+        <div className="h-2 bg-blue-100 dark:bg-slate-800 w-full">
+          <div className="h-full bg-blue-400 dark:bg-blue-600 transition-all duration-300 ease-in-out" style={{
+          width: `${currentStep / totalSteps * 100}%`
+        }} />
+        </div>
+        <MainPanel currentStep={currentStep} setCurrentStep={setCurrentStep} totalSteps={totalSteps} />
+      </div>
+      {/* Mobile Navigation - visible only on mobile */}
+      <div className="md:hidden">
+        <MobileNavigation currentStep={currentStep} setCurrentStep={setCurrentStep} />
+      </div>
+    </div>;
+};
+export function App() {
+  return <ThemeProvider>
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
+    </ThemeProvider>;
+}
