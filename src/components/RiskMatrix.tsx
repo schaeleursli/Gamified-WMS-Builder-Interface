@@ -1,5 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { AlertTriangleIcon, PlusIcon, XIcon, CheckCircleIcon } from 'lucide-react';
+import { AIAssistant } from './AIAssistant';
+import { XPToast } from './XPToast';
 interface RiskMatrixProps {
   onComplete: () => void;
   xpPoints: number;
@@ -13,6 +15,7 @@ interface Risk {
   severity: Severity;
   likelihood: Likelihood;
   mitigation: string;
+  source?: string;
 }
 export const RiskMatrix: React.FC<RiskMatrixProps> = ({
   onComplete,
@@ -34,6 +37,8 @@ export const RiskMatrix: React.FC<RiskMatrixProps> = ({
     mitigation: ''
   });
   const [isAdding, setIsAdding] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
   const handleAddRisk = () => {
     if (newRisk.description && newRisk.mitigation) {
       const risk = {
@@ -49,7 +54,10 @@ export const RiskMatrix: React.FC<RiskMatrixProps> = ({
         mitigation: ''
       });
       setIsAdding(false);
-      setXpPoints(prev => prev + 15);
+      const earnedPoints = 15;
+      setXpEarned(earnedPoints);
+      setShowToast(true);
+      setXpPoints(prev => prev + earnedPoints);
     }
   };
   const handleRemoveRisk = (id: string) => {
@@ -70,7 +78,21 @@ export const RiskMatrix: React.FC<RiskMatrixProps> = ({
       color: 'bg-green-500'
     };
   };
+  const handleAIRisksAdded = (aiRisks: Omit<Risk, 'id'>[]) => {
+    const newRisks = aiRisks.map(risk => ({
+      ...risk,
+      id: Date.now() + Math.random().toString(36).substring(2, 9),
+      description: risk.type
+    }));
+    setRisks([...risks, ...newRisks]);
+    // Award XP for using AI assistant
+    const earnedPoints = 25;
+    setXpEarned(earnedPoints);
+    setShowToast(true);
+    setXpPoints(prev => prev + earnedPoints);
+  };
   return <div>
+      {showToast && <XPToast xpAmount={xpEarned} message={`Risk assessment updated!`} type="achievement" onClose={() => setShowToast(false)} />}
       <div className="flex items-center mb-6">
         <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
           <AlertTriangleIcon size={24} />
@@ -130,6 +152,9 @@ export const RiskMatrix: React.FC<RiskMatrixProps> = ({
                     <div className={`ml-3 ${color} text-white text-xs px-2 py-0.5 rounded-full`}>
                       {level} Risk
                     </div>
+                    {risk.source === 'AI' && <span className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full">
+                        AI Suggested
+                      </span>}
                   </div>
                   <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                     <span className="inline-block mr-4">
@@ -211,7 +236,9 @@ export const RiskMatrix: React.FC<RiskMatrixProps> = ({
             </div>
           </div>}
       </div>
-      <div className="flex justify-end">
+      {/* AI Risk Assistant */}
+      <AIAssistant stepDescription="Lift 120t transformer using crawler crane" category="Lifting" onRisksAdded={handleAIRisksAdded} />
+      <div className="flex justify-end mt-6">
         <button onClick={onComplete} className="flex items-center px-6 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-all">
           <CheckCircleIcon size={18} className="mr-2" />
           Complete Risk Assessment

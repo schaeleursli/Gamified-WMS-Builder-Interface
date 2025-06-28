@@ -2,6 +2,7 @@ import React from 'react';
 import { LayoutDashboardIcon, FolderIcon, HardHatIcon, AlertTriangleIcon, MoonIcon, SunIcon, GlobeIcon, UserIcon, LogOutIcon } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import { useUser } from './UserContext';
+import { useLanguage } from '../contexts/LanguageContext';
 interface SidebarProps {
   currentStep: number;
 }
@@ -16,6 +17,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     user,
     logout
   } = useUser();
+  const {
+    language,
+    setLanguage,
+    t
+  } = useLanguage();
   const navItems = [{
     icon: <LayoutDashboardIcon size={20} />,
     label: 'Dashboard',
@@ -61,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
             <div className="mt-1 h-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500 rounded-full" style={{
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{
             width: '65%'
           }}></div>
             </div>
@@ -71,13 +77,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="w-10 h-10 rounded-full bg-blue-400 dark:bg-blue-500 flex items-center justify-center">
           <HardHatIcon size={24} className="text-white" />
         </div>
-        <h1 className="ml-3 font-semibold text-lg">WMS Builder</h1>
+        <h1 className="ml-3 font-semibold text-lg">{t('app.title')}</h1>
       </div>
-      <nav className="flex-1">
+      <nav className="flex-1" aria-label="Main Navigation">
         <ul>
           {navItems.map((item, index) => <li key={index} className="mb-2">
               <a href="#" className={`flex items-center p-3 rounded-lg transition-colors duration-200 
-                  ${item.active ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-blue-50 dark:hover:bg-slate-700'}`}>
+                  ${item.active ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-blue-50 dark:hover:bg-slate-700'}`} aria-current={item.active ? 'page' : undefined}>
                 <span className={`${item.active ? 'text-blue-500 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>
                   {item.icon}
                 </span>
@@ -92,13 +98,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <GlobeIcon size={18} className="text-slate-500 dark:text-slate-400" />
             <span className="ml-3 text-sm">Language</span>
           </div>
-          <select className="bg-transparent text-sm border border-slate-300 dark:border-slate-600 rounded px-1">
-            <option>English</option>
-            <option>Español</option>
-            <option>Français</option>
+          <select className="bg-transparent text-sm border border-slate-300 dark:border-slate-600 rounded px-1" value={language} onChange={e => setLanguage(e.target.value as any)} aria-label="Select language">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
           </select>
         </div>
-        <button onClick={toggleTheme} className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700">
+        <button onClick={toggleTheme} className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700" aria-pressed={theme === 'dark'}>
           {theme === 'light' ? <>
               <MoonIcon size={18} className="text-slate-500 dark:text-slate-400" />
               <span className="ml-3 text-sm">Dark Mode</span>
